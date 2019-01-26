@@ -79,49 +79,50 @@ public class ImageDataSource implements LoaderManager.LoaderCallbacks<Cursor> {
         imageFolders.clear();
         if (data != null) {
             ArrayList<ImageItem> allImages = new ArrayList<>();   //所有图片的集合,不分文件夹
-            data.moveToFirst();
-            do {
-                //查询数据
-                String imageName = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
-                String imagePath = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
-                
-                File file = new File(imagePath);
-                if (!file.exists() || file.length() <= 0) {
-                    continue;
-                }
+            if(data.moveToFirst()) {
+                do {
+                    //查询数据
+                    String imageName = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
+                    String imagePath = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
 
-                long imageSize = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
-                int imageWidth = data.getInt(data.getColumnIndexOrThrow(IMAGE_PROJECTION[3]));
-                int imageHeight = data.getInt(data.getColumnIndexOrThrow(IMAGE_PROJECTION[4]));
-                String imageMimeType = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[5]));
-                long imageAddTime = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[6]));
-                //封装实体
-                ImageItem imageItem = new ImageItem();
-                imageItem.name = imageName;
-                imageItem.path = imagePath;
-                imageItem.size = imageSize;
-                imageItem.width = imageWidth;
-                imageItem.height = imageHeight;
-                imageItem.mimeType = imageMimeType;
-                imageItem.addTime = imageAddTime;
-                allImages.add(imageItem);
-                //根据父路径分类存放图片
-                File imageFile = new File(imagePath);
-                File imageParentFile = imageFile.getParentFile();
-                ImageFolder imageFolder = new ImageFolder();
-                imageFolder.name = imageParentFile.getName();
-                imageFolder.path = imageParentFile.getAbsolutePath();
+                    File file = new File(imagePath);
+                    if (!file.exists() || file.length() <= 0) {
+                        continue;
+                    }
 
-                if (!imageFolders.contains(imageFolder)) {
-                    ArrayList<ImageItem> images = new ArrayList<>();
-                    images.add(imageItem);
-                    imageFolder.cover = imageItem;
-                    imageFolder.images = images;
-                    imageFolders.add(imageFolder);
-                } else {
-                    imageFolders.get(imageFolders.indexOf(imageFolder)).images.add(imageItem);
-                }
-            } while (data.moveToNext());
+                    long imageSize = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
+                    int imageWidth = data.getInt(data.getColumnIndexOrThrow(IMAGE_PROJECTION[3]));
+                    int imageHeight = data.getInt(data.getColumnIndexOrThrow(IMAGE_PROJECTION[4]));
+                    String imageMimeType = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[5]));
+                    long imageAddTime = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[6]));
+                    //封装实体
+                    ImageItem imageItem = new ImageItem();
+                    imageItem.name = imageName;
+                    imageItem.path = imagePath;
+                    imageItem.size = imageSize;
+                    imageItem.width = imageWidth;
+                    imageItem.height = imageHeight;
+                    imageItem.mimeType = imageMimeType;
+                    imageItem.addTime = imageAddTime;
+                    allImages.add(imageItem);
+                    //根据父路径分类存放图片
+                    File imageFile = new File(imagePath);
+                    File imageParentFile = imageFile.getParentFile();
+                    ImageFolder imageFolder = new ImageFolder();
+                    imageFolder.name = imageParentFile.getName();
+                    imageFolder.path = imageParentFile.getAbsolutePath();
+
+                    if (!imageFolders.contains(imageFolder)) {
+                        ArrayList<ImageItem> images = new ArrayList<>();
+                        images.add(imageItem);
+                        imageFolder.cover = imageItem;
+                        imageFolder.images = images;
+                        imageFolders.add(imageFolder);
+                    } else {
+                        imageFolders.get(imageFolders.indexOf(imageFolder)).images.add(imageItem);
+                    }
+                } while (data.moveToNext());
+            }
 
                 //防止没有图片报异常
             if (data.getCount() > 0 && allImages.size()>0) {
